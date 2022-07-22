@@ -27,6 +27,7 @@ set(ROS2_DEPENDENCIES
   "std_msgs"
   "camera_info_manager"
   "image_transport"
+  "image_proc"
   "flir_spinnaker_common"
   "image_meta_msgs_ros2"
   "camera_control_msgs_ros2"

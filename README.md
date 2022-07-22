@@ -39,25 +39,21 @@ SpinView program.
 
 ## How to build
 
-1) Install the FLIR spinnaker driver.
+1) Install the FLIR spinnaker driver manually or use script described down below.
 2) Prepare the ROS2 driver build:
 Make sure you have your ROS2 environment sourced:
 ```
 source /opt/ros/galactic/setup.bash
 ```
 
-Create a workspace (``flir_spinnaker_ros2_ws``), clone this repo, and use ``wstool``
+Create a workspace (``flir_spinnaker_ros2_ws``), clone this repo, and use ``vcs``
 to pull in the remaining dependencies:
 
 ```
 mkdir -p ~/flir_spinnaker_ros2_ws/src
 cd ~/flir_spinnaker_ros2_ws
 git clone https://github.com/berndpfrommer/flir_spinnaker_ros2 src/flir_spinnaker_ros2
-wstool init src src/flir_spinnaker_ros2/flir_spinnaker_ros2.rosinstall
-
-# or to update an existing space
-# wstool merge -t src src/flir_spinnaker_ros2/flir_spinnaker_ros2.rosinstall
-# wstool update -t src
+vcs import src < src/flir_spinnaker_ros2/flir_spinnaker_ros2.repos
 ```
 
 To automatically install all packages that the ``flir_spinnaker_ros2``
@@ -66,17 +62,26 @@ depends upon, run this at the top of your workspace:
 rosdep install --from-paths src --ignore-src
 ```
 
+If FLIR spinnaker driver is not installed yet, paste unpacked spinnaker drivers directory into `flir_spinnaker_ros2` package, rename `spinnaker-X.X.X.XXX-YYYYY` to `sdk` and run script:
+```
+sudo src/flir_spinnaker_ros2/sdk_install.sh
+```
+
 3) Build the driver and source the workspace:
 ```
-colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=1 --packages-up-to flir_spinnaker_ros2
 . install/setup.bash
 ```
 
 ## Example usage
 
-How to launch the example file:
+How to launch the example files:
 ```
-ros2 launch flir_spinnaker_ros2 blackfly_s.launch.py camera_name:=blackfly_0 serial:="'20435008'"
+ros2 launch flir_spinnaker_ros2 blackfly_s.launch.py camera_name:=camera serial:="'20435008'"
+```
+Separate launch file for blackfly node and debayer plugin (rgb output):
+```
+ros2 launch flir_spinnaker_ros2 blackfly_rgb.launch.py camera_name:=camera serial:="'20435008'"
 ```
 
 ## Setting up GigE cameras
