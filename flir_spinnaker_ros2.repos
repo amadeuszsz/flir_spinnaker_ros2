@@ -1,0 +1,13 @@
+repositories:
+  flir_spinnaker_common:
+    type: git
+    url: https://github.com/berndpfrommer/flir_spinnaker_common.git
+    version: master
+  image_meta_msgs_ros2:
+    type: git
+    url: https://github.com/berndpfrommer/image_meta_msgs_ros2.git
+    version: master
+  camera_control_msgs_ros2:
+    type: git
+    url: https://github.com/berndpfrommer/camera_control_msgs_ros2.git
+    version: master
