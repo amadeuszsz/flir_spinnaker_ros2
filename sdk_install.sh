@@ -14,102 +14,46 @@ cd $SCRIPT_DIR/sdk/
 
 yes | sudo ./remove_spinnaker.sh
 
-/usr/bin/expect -c ' 
+yes | sudo dpkg -i libgentl_*.deb
+yes | sudo dpkg -i libspinnaker_*.deb
+yes | sudo dpkg -i libspinnaker-dev_*.deb
+yes | sudo dpkg -i libspinnaker-c_*.deb
+yes | sudo dpkg -i libspinnaker-c-dev_*.deb
+yes | sudo dpkg -i libspinvideo_*.deb
+yes | sudo dpkg -i libspinvideo-dev_*.deb
+yes | sudo dpkg -i libspinvideo-c_*.deb
+yes | sudo dpkg -i libspinvideo-c-dev_*.deb
+yes | sudo apt-get install -y ./spinview-qt_*.deb
+yes | sudo dpkg -i spinview-qt-dev_*.deb
+yes | sudo dpkg -i spinupdate_*.deb
+yes | sudo dpkg -i spinupdate-dev_*.deb
+yes | sudo dpkg -i spinnaker_*.deb
+yes | sudo dpkg -i spinnaker-doc_*.deb
 
-set timeout -1
-spawn ./install_spinnaker.sh
 
-match_max 100000
+echo "Launching USB-FS configuration script..."
+sudo sh configure_usbfs.sh
 
-expect -exact "This is a script to assist with installation of the Spinnaker SDK.\r
-Would you like to continue and install all the Spinnaker SDK packages?\r
-\[Y/n\] \$ "
+echo "Launching Spinnaker paths configuration script..."
+sudo sh configure_spinnaker_paths.sh
+    
+if [ "$ARCH" = "amd64" ]; then
+    BITS=64
+elif [ "$ARCH" = "i386" ]; then
+    BITS=32
+fi
 
-send -- "y\r"
-expect -exact "\[More\] "
-send -- "\r"
-expect -exact "\[More\]"
-send -- "\r"
-expect -exact "\[More\] "
-send -- "\r"
-expect -exact "\[More\] "
-send -- "\r"
-expect -exact "\[More\] "
-send -- "\r"
-expect -exact "\[More\] "
-send -- "\r"
-expect -exact "\[More\] "
-send -- "\r"
-expect -exact "\[More\] "
-send -- "\r"
-expect -exact "\[More\] "
-send -- "\r"
-expect -exact "\[More\] "
-send -- "\r"
-expect -exact "\[More\] "
-send -- "\r"
-expect -exact "Do you accept the EULA license terms? \[yes/no\] "
-send -- "y\r"
-
-expect -exact "Would you like to add a udev entry to allow access to USB hardware?\r
-  If a udev entry is not added, your cameras may only be accessible by running Spinnaker as sudo.\r
-\[Y/n\] \$ "
-send -- "n\r"
-expect -exact "n\r
-\r
-Would you like to set USB-FS memory size to 1000 MB at startup (via /etc/rc.local)?\r
-  By default, Linux systems only allocate 16 MB of USB-FS buffer memory for all USB devices.\r
-  This may result in image acquisition issues from high-resolution cameras or multiple-camera set ups.\r
-  NOTE: You can set this at any time by following the USB notes in the included README.\r
-\[Y/n\] \$ "
-send -- "y\r"
-
-expect -exact "y\r
-Launching USB-FS configuration script...\r
-\r
-Created /etc/rc.local and set USB-FS memory to 1000 MB.\r
-\r
-Would you like to have Spinnaker prebuilt examples available in your system path?\r
-  This allows Spinnaker prebuilt examples to run from any paths on the system.\r
-  NOTE: You can add the Spinnaker example paths at any time by following the \"RUNNING PREBUILT UTILITIES\"\r
-        section in the included README.\r
-\[Y/n\] \$ "
-send -- "y\r"
-
-expect -exact "y\r
-Launching Spinnaker paths configuration script...\r
-setup_spinnaker_paths.sh has been added to /etc/profile.d\r
-The PATH environment variable will be updated every time a user logs in.\r
-To run Spinnaker prebuilt examples in the current session, you can update the paths by running:\r
-  source /etc/profile.d/setup_spinnaker_paths.sh\r
-\r
-Would you like to have the FLIR GenTL Producer added to GENICAM_GENTL64_PATH?\r
-  This allows GenTL consumer applications to load the FLIR GenTL Producer.\r
-  NOTE: You can add the FLIR producer to GENICAM_GENTL64_PATH at any time by following the GenTL Setup notes in the included README.\r
-\[Y/n\] \$ "
-send -- "y\r"
-
-expect -exact "y\r
-Launching GenTL path configuration script...\r
-setup_flir_gentl_64.sh has been added to /etc/profile.d\r
-The FLIR_GENTL64_CTI and GENICAM_GENTL64_PATH environment variables will be updated every time a user logs in.\r
-To use the FLIR GenTL producer in the current session, you can update the FLIR_GENTL64_CTI and GENICAM_GENTL64_PATH environment variables by running:\r
-  source /etc/profile.d/setup_flir_gentl_64.sh 64\r
-\r
-Installation complete.\r
-\r
-Would you like to make a difference by participating in the Spinnaker feedback program?\r
-\[Y/n\] \$ "
-send -- "n\r"
-
-expect eof
-
-'
-
+if [ -z "$BITS" ]; then
+    echo "Could not automatically add the FLIR GenTL Producer to the GenTL environment variable."
+    echo "To use the FLIR GenTL Producer, please follow the GenTL Setup notes in the included README."
+else
+    echo "Launching GenTL path configuration script..."
+    sudo sh configure_gentl_paths.sh $BITS
+fi
+    
 sudo sh -c 'echo 1000 > /sys/module/usbcore/parameters/usbfs_memory_mb'
 sudo sysctl -w net.core.rmem_max=10485760
 sudo sysctl -w net.core.rmem_default=10485760
-
 
 echo "Configuring udev rules..."
 sudo $SCRIPT_DIR/udev_conf.sh
